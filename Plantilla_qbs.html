@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuesta de Ruta</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+            box-sizing: border-box;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-transform: uppercase;
+        }
+        .form-group button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .form-group button:hover {
+            background-color: #218838;
+        }
+        .output {
+            margin-top: 20px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PLANTILLA QBS</h1>
+        <form id="surveyForm">
+            <div class="form-group">
+                <label for="route">RUTA A:</label>
+                <textarea id="route" name="route" rows="2" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="datetime">DÍA/HORA:</label>
+                <input type="datetime-local" id="datetime" name="datetime" required>
+            </div>
+            <div class="form-group">
+                <label for="location">LUGAR:</label>
+                <input type="text" id="location" name="location" required>
+            </div>
+            <div class="form-group">
+                <label for="kms">KMS:</label>
+                <input type="text" id="kms" name="kms" required>
+            </div>
+            <div class="form-group">
+                <label for="elevation">DESNIVEL:</label>
+                <input type="text" id="elevation" name="elevation" required>
+            </div>
+            <div class="form-group">
+                <label for="speed">VELOCIDAD:</label>
+                <select id="speed" name="speed" required>
+                    <option value="lenta">Lenta</option>
+                    <option value="10-15">10-15 km/h</option>
+                    <option value="16-18">16-18 km/h</option>
+                    <option value="19+">19+ km/h</option>
+                    <option value="entrenamiento">Entrenamiento</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="additional">+DATOS:</label>
+                <textarea id="additional" name="additional" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <button type="submit">Enviar</button>
+            </div>
+        </form>
+        <button id="copyButton" style="display: none;">COPIAR</button>
+        <div class="output" id="output"></div>
+    </div>
+
+    <script>
+        document.getElementById('surveyForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var route = document.getElementById('route').value;
+            var datetime = document.getElementById('datetime').value;
+            var location = document.getElementById('location').value;
+            var kms = document.getElementById('kms').value.toLowerCase();
+            var elevation = document.getElementById('elevation').value.toLowerCase();
+            var speed = document.getElementById('speed').value;
+            var additional = document.getElementById('additional').value;
+
+            // Formatear la fecha y la hora en formato europeo
+            function formatDatetime(datetime) {
+                var [date, time] = datetime.split('T');
+                var [year, month, day] = date.split('-');
+                return `${day}-${month}-${year} ${time}`;
+            }
+
+            // Función para determinar el color del corazón basado en kms
+            function getHeartColorKms(kms) {
+                if (kms === 'entrenamiento') return '🖤';
+                var kmsValue = parseInt(kms);
+                if (kmsValue >= 61) return '❤️';
+                if (kmsValue >= 41) return '💚';
+                if (kmsValue >= 21) return '💙';
+                if (kmsValue >= 1) return '🤍';
+                return '';
+            }
+
+            // Función para determinar el color del corazón basado en desnivel
+            function getHeartColorElevation(elevation) {
+                if (elevation === 'entrenamiento') return '🖤';
+                var elevationValue = parseInt(elevation);
+                if (elevationValue >= 501) return '❤️';
+                if (elevationValue >= 201) return '💚';
+                if (elevationValue >= 1) return '💙';
+                if (elevationValue === 0) return '🤍';
+                return '';
+            }
+
+            // Función para determinar el color del corazón basado en velocidad
+            function getHeartColorSpeed(speed) {
+                switch (speed) {
+                    case 'lenta':
+                        return '🤍';
+                    case '10-15':
+                        return '💙';
+                    case '16-18':
+                        return '💚';
+                    case '19+':
+                        return '❤️';
+                    case 'entrenamiento':
+                        return '🖤';
+                    default:
+                        return '';
+                }
+            }
+
+            var heartKms = getHeartColorKms(kms);
+            var heartElevation = getHeartColorElevation(elevation);
+            var heartSpeed = getHeartColorSpeed(speed);
+            var formattedDatetime = formatDatetime(datetime);
+
+            var outputText = `RUTA A: ${route}\nDÍA/HORA: ${formattedDatetime}\nLUGAR: ${location}\nKMS: ${kms} ${heartKms}\nDESNIVEL: ${elevation} ${heartElevation}\nVELOCIDAD: ${speed} ${heartSpeed}\n+DATOS: ${additional}`;
+            document.getElementById('output').innerText = outputText;
+            document.getElementById('copyButton').style.display = 'block
+      
